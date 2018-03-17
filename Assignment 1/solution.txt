@@ -1,0 +1,109 @@
+#Problem No 1
+#Import Data from deliveries.csv into a dataframe
+deliveries<-read.csv("deliveries.csv",header=TRUE,sep=",")
+#Subset elements from deliveries data frame to match 577
+match577<-subset(deliveries,match_id==577)
+#Dividing the match577 data frame when SRH batted
+srhbat<-subset(match577,batting_team=="Sunrisers Hyderabad")
+#Adding the total runs to compute the batting score of SRh
+srhscore<-sum(srhbat$total_runs)
+#Target is 1 greater than the original score
+target<-srhscore+1
+sprintf("The target set was %d",target)
+#Required Run Rate is the opposition's score divided by the number of overs i.e 20
+Reqrr<-srhscore/20
+sprintf("The required run rate for Royal Challengers Bangalore to atleast draw the match was %f",Reqrr)
+#Selecting the rows when RCB batted
+rcbbat<-subset(match577,batting_team="Royal Challengers Bangalore")
+#Computing the number of runs scored in each over and storing in j
+j<-aggregate(rcbbat$total_runs,by=list(Over=rcbbat$over),FUN=sum)
+#Assigning names to columns of g
+names(j)<-c("Over","Runs")
+Plotting a histogram
+# a<-hist(j$Runs,breaks=30,col="blue",main="Frequency of Runs Per Over",xlab="Runs")
+#Plotting the barplot
+ j<-as.matrix(j)
+j<-j[,2]
+ barplot(j,xlab="Over",beside=TRUE,names.arg=c(1:20),ylab="Runs",main="Runs in each over",ylim=c(0,25))
+
+#Problem No 2
+#Computing the total score of each inning of each match and then sorting the result on match_id
+pb2<-aggregate(deliveries$total_runs,by=list(deliveries$match_id,deliveries$inning,deliveries$batting_team),FUN=sum,row.names=F)
+names(pb2)<-c("match_id","inning","batting_team","total_runs")
+pb2<-pb2[order(pb2$match_id),]
+print(pb2)
+#Report for matches with match_id 7,27,67,171 and 414 and storing it in res
+res<-subset(pb2,match_id%in%c(7,27,67,171,414))
+print(res)
+#Team and highest scores for normal/tied matches
+#Reading the data from matches.csv and storing it in results
+results<-read.csv("matches.csv",header=TRUE)
+#Subset the results data frame to get match_id of normal and tied matches and where D/L is not applied
+matches<-subset(results,dl_applied==0&(result=="normal"|result=="tie"))
+#Selecting only the matchid from matches and making it a vector 
+v<-matches[,"id"]
+#and then picking the data from pb2 for valid matches
+vm<-subset(pb2,match_id%in%v)
+#Finding the team and maximum score 
+maxscore<-vm[which.max(vm$total_runs),c("batting_team","total_runs")]
+print(maxscore)
+#Finding the team and minimum score
+minscore<-vm[which.min(vm$total_runs),c("batting_team","total_runs")]
+print(minscore)
+
+#Question 3
+#First subset the dataframe of deliveries to all the balls AB De Villiers,MS Dhoni,RA Jadeja,SK Raina and V Kohli 
+#For AB de Villiers
+ABD<-subset(deliveries,batsman=="AB de Villiers"&batsman_runs!=0)
+ABD<-aggregate(ABD$batsman_runs,by=list(ABD$match_id),FUN=sum)
+names(ABD)<-c("match_id","runs")
+print(summary(ABD$runs))
+print(sum(ABD$runs))
+#For MS Dhoni
+MSD<-subset(deliveries,batsman=="MS Dhoni"&batsman_runs!=0)
+MSD<-aggregate(MSD$batsman_runs,by=list(MSD$match_id),FUN=sum)
+names(MSD)<-c("match_id","runs")
+print(summary(MSD$runs))
+print(sum(MSD$runs))
+#For RA Jadeja
+RAJ<-subset(deliveries,batsman=="RA Jadeja"&batsman_runs!=0)
+RAJ<-aggregate(RAJ$batsman_runs,by=list(RAJ$match_id),FUN=sum)
+names(RAJ)<-c("match_id","runs")
+print(summary(RAJ$runs))
+print(sum(RAJ$runs))
+#For SK Raina
+SKR<-subset(deliveries,batsman=="SK Raina"&batsman_runs!=0)
+SKR<-aggregate(SKR$batsman_runs,by=list(SKR$match_id),FUN=sum)
+names(SKR)<-c("match_id","runs")
+print(summary(SKR$runs))
+print(sum(SKR$runs))
+#For Virat Kohli
+VK<-subset(deliveries,batsman=="V Kohli"&batsman_runs!=0)
+VK<-aggregate(VK$batsman_runs,by=list(VK$match_id),FUN=sum)
+names(VK)<-c("match_id","runs")
+print(summary(VK$runs))
+print(sum(VK$runs))
+
+#Problem 4
+#Boxplot for Virat Kohli's performances and 90th percentile
+boxplot(VK$runs,ylab="Runs",main="Virat Kohli",col="red")
+print(quantile(VK$runs,0.9))
+#Boxplot for MS Dhoni's performances and 90th percentile
+boxplot(MSD$runs,ylab="Runs",main="MS Dhoni",col="blue")
+print(quantile(MSD$runs,0.9))
+
+#Problem 5
+#Finding all the deliveries of Gujarat Lions
+GL<-subset(deliveries,batting_team=="Gujarat Lions")
+#Finding all the deliveries Suresh Raina score off while playing for Gujarat Lions
+sr<-subset(GL,batsman_name=="SK Raina"&batsman_runs!=0)
+Computing team score of Gujarat Lions for each match
+GLscore<-aggregate(GL$total_runs,by=list(GL$match_id),FUN=sum)
+#Computing Suresh Raina's score for each match
+ Rs<-aggregate(sr$batsman_runs,by=list(sr$match_id),FUN=sum)
+#Selecting only the total scores of Gujarat Lions
+y<-GLscore[,2]
+#Selecting only the scores of Suresh Raina
+z<-Rs[,2]
+#Computing the correlation
+print(cor(y,z))
