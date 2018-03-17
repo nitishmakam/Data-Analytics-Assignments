@@ -1,0 +1,127 @@
+#Problem 1
+#First reading the csv file into a dataframe
+	poke<-read.csv("/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 2/pokemon.csv",header=TRUE)
+#Finding the number 70% of the total number of rows
+	no<-ceiling(0.7*nrow(poke))
+#Loading the dplyr library
+	library(dplyr)
+#Random sampling with 70% of the population
+	s1<-sample_n(poke,no)
+#Systematic sample with k=3
+	s2<-subset(poke,Number%%3==1)
+#Stratified Random Sampling with strata as 'male' and 'female'
+	library(splitstackshape)
+	poke1<-read.csv("/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 2/pokemon.csv",header=TRUE)
+	poke1<-subset(poke1,hasGender==TRUE)
+	poke1<-within(poke1,{gender=ifelse(Pr_Male>=0.5,"Male","Female")})
+	s3<-stratified(poke1,"gender",size=15)
+#Clustered Sampling with 70% of the types
+	library(sampling)
+	size4<-ceiling(0.7*length(unique(poke$Type_1)))
+	ff<-cluster(data=poke,clustername=c("Type_1"),size=size4,method=c("srswor"))
+	s4<-poke[which(ff$ID_unit %in% poke$Number),]
+
+#Plotting distribution of Total for s1
+library(ggplot2)
+plot1<-ggplot(s1,aes(x=Total))+geom_histogram(aes(y=..density..),binwidth=5,colour='black',fill='white')+geom_density(alpha=.2,fill='#FF6666')+ggtitle("Random Sampling")
+png('Random.png')
+plot1
+dev.off()
+plot2<-ggplot(s2,aes(x=Total))+geom_histogram(aes(y=..density..),binwidth=5,colour='black',fill='white')+geom_density(alpha=.2,fill='#FF6666')+ggtitle("Systematic sampling with k=3")
+png('Systematic.png')
+plot2
+dev.off()
+plot3<-ggplot(s3,aes(x=Total))+geom_histogram(aes(y=..density..),binwidth=5,colour='black',fill='white')+geom_density(alpha=.2,fill='#FF6666')+ggtitle("Stratified sampling")
+png('Stratified.png')
+plot3
+dev.off()
+plot4<-ggplot(s4,aes(x=Total))+geom_histogram(aes(y=..density..),binwidth=5,colour='black',fill='white')+geom_density(alpha=.2,fill='#FF6666')+ggtitle("Clustered sampling")
+png('Clustered.png')
+plot4
+dev.off()
+plotpop<-ggplot(poke,aes(x=Total))+geom_histogram(aes(y=..density..),binwidth=5,colour='black',fill='white')+geom_density(alpha=.2,fill='#FF6666')+ggtitle("Population")
+png('pop.png')
+plotpop
+dev.off()
+
+#Problem No 2
+	Grass<-poke[which(poke$Type_1=='Grass'),]
+	Fire<-poke[which(poke$Type_1=='Fire'),]
+	 var<-c('HP','Attack','Defense','Sp_Atk','Sp_Def','Speed')
+	Grass<-Grass[,var]
+	Fire<-Fire[,var]	
+	nm<-function(x){(x-min(x))/(max(x)-min(x))}
+	Grass<-sapply(Grass,nm)
+	Fire<-sapply(Fire,nm)
+	Grass<-as.data.frame(Grass)
+	Fire<-as.data.frame(Fire)
+	Grass<-sapply(Grass,mean)
+	Fire<-sapply(Fire,mean)
+	GF<-rbind(Grass,Fire)
+	d<-dist(GF)
+	print(d)
+	
+	Grass<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Grass'),var],nm)),mean)
+	Fire<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Fire'),var],nm)),mean)
+	Water<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Water'),var],nm)),mean)
+	Bug<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Bug'),var],nm)),mean)
+	Normal<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Normal'),var],nm)),mean)
+	Poison<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Poison'),var],nm)),mean)
+	Electric<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Electric'),var],nm)),mean)
+	Ground<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Ground'),var],nm)),mean)
+	Fairy<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Fairy'),var],nm)),mean)
+	Fighting<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Fighting'),var],nm)),mean)
+	Psychic<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Psychic'),var],nm)),mean)
+	Rock<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Rock'),var],nm)),mean)
+	Ghost<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Ghost'),var],nm)),mean)
+	Ice<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Ice'),var],nm)),mean)
+	Dragon<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Dragon'),var],nm)),mean)
+	Dark<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Dark'),var],nm)),mean)
+	Steel <-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Steel'),var],nm)),mean)
+	Flying<-sapply(as.data.frame(sapply(poke[which(poke$Type_1=='Flying'),var],nm)),mean)
+	
+	 All<-rbind(Grass,Fire,Water,Bug,Normal,Poison,Electric,Ground,Fairy,Fighting,Psychic,Rock,Ghost,Ice,Dragon,Dark,Steel,Flying)
+	All<-as.data.frame(All)
+	png('Lineplot.png')
+	matplot(t(All),type='l')
+	dev.off()
+	
+	library(moments)
+	Wkurt<-kurtosis(poke$Weight_kg)
+	Wskew<-skewness(poke$Weight_kg)
+	Hkurt<-kurtosis(poke$Height_m)
+	Hskew<-skewness(poke$Height_m)
+#Plotting those graphs
+	 v<-data.frame(scale(poke$HP),scale(poke$Attack),scale(poke$Defense),scale(poke$Sp_Atk),scale(poke$Sp_Def),scale(poke$Speed),scale(poke$Total),scale(poke$Height_m),scale(poke$Weight_kg))
+	 names(v)<-c('HP','Attack','Defense','Sp_Atk','Sp_Def','Speed','Total','Height_m','Weight_kg')
+	library(reshape2)
+	library(ggplot2)
+	v.plot<-melt(v)
+	png('p2.png')
+	 gp<-ggplot(aes(x=value,colour=variable),data=v.plot)
+	gp+geom_density()
+	dev.off()
+	
+	
+	
+#Problem 3
+#Selecting the numeric variables for Principal Component Analysis
+numvar<-c(,'HP','Attack','Defense','Sp_Atk','Sp_Def','Speed','Generation','Height_m','Weight_kg','Catch_Rate')
+pca<-poke[,numvar]
+#Performing Principal Component Analysis
+ana<-prcomp(pca)
+bb<-ana$sdev
+#Computing New Variance
+bb<-bb*bb
+#And then plotting it
+png('variance.png')
+plot(bb,ylab='Variance')
+dev.off()
+#Print the data that should be stored in the device
+print(ana$rotation[,c('PC1','PC2')])
+#Scatterplot
+png('scatterplot.png')
+plot(ana$rotation[,'PC1'],ana$rotation[,'PC2'],xlab='PC1',ylab='PC2')
+dev.off()
+
+
