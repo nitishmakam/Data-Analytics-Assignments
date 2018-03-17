@@ -1,0 +1,44 @@
+#Question 2
+	#Part A
+	#First importing the csv file to a dataset
+		cancer<-read.csv('/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 4/cancer_tailored.csv',header=TRUE)
+	#Removing all the rows that have missing values
+		cancer<-na.omit(cancer)
+	#Installing the required packages
+		install.packages('corrplot')
+		library(corrplot)
+	#Taking only the numeric values
+		real<-cancer[,c(2:31)]
+	#Computing the correlation
+		M<-cor(real)
+	#Plotting and saving the correlation plot
+		png('corplot.png')
+		corrplot(M,method='pie',type='lower')
+		dev.off()
+
+
+#Part B
+	#Installing the required packages
+		install.packages('caret')
+		install.packages('e1071')
+	#Loading the required packages
+		library(e1071)
+		library(caret)
+	#Converting the data to a table
+		tab<-table(cancer[,c(32,33)])
+	#Tabulating the confusion matrix
+		d<-confusionMatrix(tab,positive='M')
+	#Renaming the matrices
+		TN<-d$table[1,1]
+		FP<-d$table[1,2]
+		TP<-d$table[2,2]
+		FN<-d$table[2,1]
+		sprintf("True Positive : %d",TP)
+		sprintf("True Negative : %d",TN)
+		sprintf("False Positive : %d",FP)
+		sprintf("False Negative : %d",FN)
+
+#Part C
+	#Printing the result of the confusionMatrix function
+	print(d)
+
