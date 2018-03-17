@@ -1,0 +1,98 @@
+#Question 3
+#read the csv file and store into a dataframe
+ranking<-read.csv('/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 3/business_rankings.csv',header=TRUE)
+#since for ease of doing business is already sorted, pick the first 20 rows and only the economy and ranking columns
+eodb<-ranking[1:20,1:2]
+#Picking the first sorted 20 rows for each of the other rankings
+sab<-ranking[order(ranking$Starting.a.Business),]
+sab<-sab[1:20,c(1,3)]
+dwcp<-ranking[order(ranking$Dealing.with.Construction.Permits),]
+ dwcp<-dwcp[1:20,c(1,4)]
+ pmi<-ranking[order(ranking$Protecting.Minority.Investors),]
+ pmi<-pmi[1:20,c(1,5)]
+ #Plotting Maps to Visualize the given data
+ #For ease of doing Business
+ #loading map data
+ require(mapdata)
+ map()
+ map('world',regions=eodb$Economy,fill=TRUE,col=eodb$Ease.of.Doing.Business.Rank,add=TRUE)
+ #adding legend
+ legend('topright',legend=eodb$Economy,title='Countries',fill=eodb$Ease.of.Doing.Business.Rank,cex=0.4)
+legend('bottomleft',legend=eodb$Ease.of.Doing.Business.Rank,title='Ranks',fill=eodb$Ease.of.Doing.Business.Rank,cex=0.4)
+ #Adding title
+ title('Rankings for Ease of Doing Business')
+ #For Starting a Business
+ require(mapdata)
+ map()
+ map('world',regions=sab$Economy,fill=TRUE,col=sab$Starting.a.Business,add=TRUE)
+ legend('topright',legend=sab$Economy,title='Countries',fill=sab$Starting.a.Business,cex=0.4)
+legend('bottomleft',legend=sab$Starting.a.Business,title='Ranks',fill=sab$Starting.a.Business,cex=0.4)
+ title('Rankings for Starting A Business')
+#For Dealing with Construction Permits
+ require(mapdata)
+ map()
+ map('world',regions=dwcp$Economy,fill=TRUE,col=dwcp$Dealing.With.Construction.Permits,add=TRUE)
+ legend('topright',legend=dwcp$Dealing.With.Construction.Permits,title='Countries',fill=dwcp$Dealing.With.Construction.Permits,cex=0.4)
+legend('bottomleft',legend=dwcp$Dealing.With.Construction.Permits,title='Ranks',fill=dwcp$Dealing.With.Construction.Permits,cex=0.4)
+ title('Rankings for Dealing with Construction Permits')
+ #For protecting Minority Investors
+ require(mapdata)
+ map()
+ map('world',regions=pmi$Economy,fill=TRUE,col=pmi$Protecting.Minority.Investors,add=TRUE)
+legend('topright',legend=pmi$Economy,title='Countries',fill=pmi$Protecting.Minority.Investors,cex=0.4)
+legend('bottomleft',legend=pmi$Protecting.Minority.Investors,title='Ranks',fill=pmi$Protecting.Minority.Investors,cex=0.4)
+title('Rankings For Protecting Minority Investors')
+
+#Question 4
+#Installing the required packages
+install.packages('tm')
+install.packages('SnowballC')
+install.packages('wordcloud')
+install.packages('RColorBrewer')
+#Loading the required packages
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
+library(stringr)
+#Reading the CSV file
+demo<-read.csv('/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 3/demonetization.csv',header=TRUE,stringsAsFactors=FALSE)
+demo<-demo[,c(1,6)]
+clean.text <- function(some_txt)
+{
+some_txt = gsub("&amp", "", some_txt)
+ 
+some_txt = gsub("(RT|via)((?:\b\\W*@\\w+)+)", "", some_txt)
+ 
+some_txt = gsub("@\\w+", "", some_txt)
+ 
+some_txt = gsub("[[:punct:]]", "", some_txt)
+ 
+some_txt = gsub("[[:digit:]]", "", some_txt)
+ 
+some_txt = gsub("http\\w+", "", some_txt)
+ 
+some_txt = gsub("[ t]{2,}", "", some_txt)
+ 
+some_txt = gsub("^\\s+|\\s+$", "", some_txt)
+}
+demo$text<-clean.text(demo$text)
+
+demo$text<-iconv(demo$text,to='utf-8',sub='')
+
+realdemo<-demo[rep(row.names(demo),demo$retweetCount),]
+
+#Removing words that do not form part of the tweets and are additional
+demoCorpus<-Corpus(VectorSource(realdemo$text))
+demoCorpus<-tm_map(demoCorpus,PlainTextDocument)
+
+demoCorpus<-tm_map(demoCorpus,removeWords,c("RT","this","the","This","The",stopwords('english')))
+demoCorpus<-tm_map(demoCorpus,removePunctuation)
+demoCorpus<-tm_map(demoCorpus,tolower)
+
+#Stemming the Document
+demoCorpus<-tm_map(demoCorpus,stemDocument)
+#Plotting the wordcloud
+pal <-brewer.pal(8,"Dark2")
+wordcloud(demoCorpus,max.words=200,rot.per=0.3,random.order=FALSE,colors=pal)
+print('hello')

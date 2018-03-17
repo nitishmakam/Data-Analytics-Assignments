@@ -1,0 +1,52 @@
+#Question 4
+#Installing the required packages
+install.packages('tm')
+install.packages('SnowballC')
+install.packages('wordcloud')
+install.packages('RColorBrewer')
+#Loading the required packages
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
+library(stringr)
+#Reading the CSV file
+demo<-read.csv('/home/msjagadishs/Sem\ 5/Data\ Analytics/Assignment\ 3/demonetization.csv',header=TRUE,stringsAsFactors=FALSE)
+demo<-demo[,c(1,6)]
+clean.text <- function(some_txt)
+{
+some_txt = gsub("&amp", "", some_txt)
+ 
+some_txt = gsub("(RT|via)((?:\b\\W*@\\w+)+)", "", some_txt)
+ 
+some_txt = gsub("@\\w+", "", some_txt)
+ 
+some_txt = gsub("[[:punct:]]", "", some_txt)
+ 
+some_txt = gsub("[[:digit:]]", "", some_txt)
+ 
+some_txt = gsub("http\\w+", "", some_txt)
+ 
+some_txt = gsub("[ t]{2,}", "", some_txt)
+ 
+some_txt = gsub("^\\s+|\\s+$", "", some_txt)
+}
+demo$text<-clean.text(demo$text)
+
+demo$text<-iconv(demo$text,to='utf-8',sub='')
+
+realdemo<-demo[rep(row.names(demo),demo$retweetCount),]
+
+#Removing words that do not form part of the tweets and are additional
+demoCorpus<-Corpus(VectorSource(realdemo$text))
+demoCorpus<-tm_map(demoCorpus,PlainTextDocument)
+
+#demoCorpus<-tm_map(demoCorpus,removeWords,stopwords('english'))
+demoCorpus<-tm_map(demoCorpus,removePunctuation)
+demoCorpus<-tm_map(demoCorpus,tolower)
+
+#Stemming the Document
+demoCorpus<-tm_map(demoCorpus,stemDocument)
+#Plotting the wordcloud
+pal <-brewer.pal(8,"Dark2")
+wordcloud(demoCorpus,max.words=200,rot.per=0.3,random.order=FALSE,colors=pal)
